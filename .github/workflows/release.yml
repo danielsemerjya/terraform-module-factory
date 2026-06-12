@@ -1,0 +1,44 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "modules/*/v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse module and version from tag
+        id: parse
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}" # modules/<name>/vX.Y.Z
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "module=$(cut -d/ -f2 <<<"$TAG")" >> "$GITHUB_OUTPUT"
+          echo "version=$(cut -d/ -f3 <<<"$TAG")" >> "$GITHUB_OUTPUT"
+      - name: Extract changelog section as release notes
+        run: |
+          set -euo pipefail
+          FILE="modules/${{ steps.parse.outputs.module }}/CHANGELOG.md"
+          VERSION="${{ steps.parse.outputs.version }}"
+          awk -v ver="${VERSION#v}" '
+            $0 ~ "^## \\[" ver "\\]" { inside = 1; next }
+            inside && /^## \[/ { exit }
+            inside { print }
+          ' "$FILE" > release-notes.md
+          if ! [[ -s release-notes.md ]]; then
+            echo "No changelog section found for ${VERSION} in ${FILE}." | tee release-notes.md
+            exit 1
+          fi
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.parse.outputs.tag }}" \
+            --title "${{ steps.parse.outputs.module }} ${{ steps.parse.outputs.version }}" \
+            --notes-file release-notes.md

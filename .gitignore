@@ -1,0 +1,22 @@
+# Terraform working dirs and state — modules are never roots with real state
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Lock files: modules/examples/tests are not deployment roots; callers own their locks
+.terraform.lock.hcl
+
+# Shared provider plugin cache (see .mise.toml)
+.terraform-plugin-cache/
+
+# Local overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# OS noise
+.DS_Store

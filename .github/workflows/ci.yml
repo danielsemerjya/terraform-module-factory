@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  detect-modules:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.detect.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect modules to check
+        id: detect
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="$(git rev-parse HEAD~1 2>/dev/null || git hash-object -t tree /dev/null)"
+          fi
+          CHANGED="$(git diff --name-only "$BASE" HEAD)"
+          # Any harness-level change (Makefile, standards, lint/docs config, workflows,
+          # templates) re-validates every module; otherwise only changed modules run.
+          if grep -qvE '^modules/' <<<"$CHANGED"; then
+            MODULES="$(ls modules | jq -R . | jq -cs .)"
+          else
+            MODULES="$(awk -F/ '/^modules\//{print $2}' <<<"$CHANGED" | sort -u | jq -R . | jq -cs .)"
+          fi
+          echo "modules=$MODULES" >> "$GITHUB_OUTPUT"
+          echo "Modules to check: $MODULES"
+
+  check:
+    needs: detect-modules
+    if: needs.detect-modules.outputs.modules != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        uses: jdx/mise-action@v2
+      - name: Cache tflint plugins
+        uses: actions/cache@v4
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ runner.os }}-${{ hashFiles('.tflint.hcl') }}
+      - name: Run all gates
+        run: make check MODULE=${{ matrix.module }}

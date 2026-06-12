@@ -1,0 +1,11 @@
+# Pinned toolchain — local agents and CI run EXACTLY these versions (CI installs
+# via jdx/mise-action). Upgrade deliberately: bump here, run `make check-all`, commit.
+[tools]
+terraform      = "1.15.6"
+tflint         = "0.63.1"
+terraform-docs = "0.24.0"
+trivy          = "0.71.0"
+
+[env]
+# Shared provider cache — module + every example init reuse one azurerm download.
+TF_PLUGIN_CACHE_DIR = "{{config_root}}/.terraform-plugin-cache"
