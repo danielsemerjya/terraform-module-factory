@@ -3,6 +3,15 @@
 Monorepo of reusable Azure (azurerm) Terraform modules. One folder per module under
 `modules/<name>`; every module has the identical canonical shape (see `templates/module-skeleton/`).
 
+**Strategy (read `docs/concept.md` + `docs/adr/0005-wrap-curate-avm.md`):** the factory's
+default building block is a *pinned Azure Verified Module (AVM)*, not hand-written `azurerm`
+resources. Wrap an Available AVM module when we add real value (opinionated defaults, a
+simplified interface, or a composite pattern); build custom only for genuine AVM gaps. One
+shared source serves multiple enterprise clients across landing-zone maturity stages — they
+vary by which module categories they adopt and which versions they pin, never by forking.
+(The skeleton and `/new-module` still scaffold the raw-`azurerm` path today; the AVM-wrap
+scaffold is on the roadmap.)
+
 ## The one command that matters
 
 ```

@@ -1,9 +1,21 @@
 # Terraform Module Factory
 
-A monorepo of reusable Azure (azurerm) Terraform modules — and the agentic engineering
-harness that produces them. The "factory" is the point: this repo is built so that a
-coding agent (Claude Code) can write, test, document, and release modules to the same
-standard as a senior engineer, because every standard is enforced by machines, not memory.
+A **factory for Azure infrastructure modules**: a repeatable system that turns Microsoft's
+free, supported [Azure Verified Modules (AVM)](https://azure.github.io/Azure-Verified-Modules/)
+into a **curated, opinionated, client-ready catalog** — and produces the few custom modules
+AVM is missing to the same standard. We don't rebuild the commodity bricks Microsoft already
+maintains; we build the layer on top (secure defaults, golden-path patterns, governance) and
+deliver it to multiple enterprise clients from one shared source.
+
+> **Start here:** [docs/concept.md](docs/concept.md) — the idea, the business case, and a
+> ready-to-run demo walkthrough. See also the [adoption maturity map](docs/adoption-maturity-map.md),
+> [ADR 0005 (wrap/curate AVM)](docs/adr/0005-wrap-curate-avm.md), and the
+> [enhancement roadmap](docs/enhancement-roadmap.md).
+
+The **factory and the curation are the product**, not the individual modules. What makes it
+trustworthy is the agentic engineering harness underneath: a coding agent (Claude Code) can
+write, test, document, and release modules to the same standard as a senior engineer, because
+every standard is enforced by machines, not memory.
 
 ## New to agentic engineering?
 
@@ -32,6 +44,11 @@ The full design — layers, rationale, and rules for evolving it — is in
 [docs/harness.md](docs/harness.md).
 
 ## Modules
+
+New modules **wrap a pinned AVM module by default**, and we build custom only where AVM has a
+genuine gap ([ADR 0005](docs/adr/0005-wrap-curate-avm.md)). `virtual-network` below is the v1
+reference that proved the harness end-to-end from raw `azurerm`; re-anchoring it onto AVM is
+on the [roadmap](docs/enhancement-roadmap.md).
 
 | Module | Description |
 |---|---|

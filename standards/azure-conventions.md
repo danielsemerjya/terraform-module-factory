@@ -3,6 +3,23 @@
 Interfaces follow Azure Verified Modules conventions where practical, so consumers get
 a uniform experience across modules and can migrate to/from AVM modules cheaply.
 
+## AVM-first
+
+The default building block is a **pinned Azure Verified Module (AVM)**, not hand-written
+`azurerm` resources ([ADR 0005](../docs/adr/0005-wrap-curate-avm.md)). Before writing a new
+module, check the live AVM index:
+
+- **Wrap** an *Available* AVM module when we add real value — our secure-default profile, a
+  simplified/opinionated interface, or a composite pattern.
+- **Catalog-and-pin** (no wrapper) when a thin wrapper adds nothing — record the blessed AVM
+  source + version + an example and point consumers at it directly.
+- **Build custom** (the conventions below) only for a genuine AVM gap, or when AVM's module
+  is Orphaned/Deprecated and unfit.
+
+When wrapping, set `enable_telemetry` to the org default explicitly and record the wrapped
+AVM source, pinned version, and lifecycle state in the catalog. The universal inputs and
+secure-default rules below apply to custom modules and to the interface our wrappers expose.
+
 ## Universal inputs (every module)
 
 - `name` (string, required) — name of the primary resource. Caller's naming policy.
